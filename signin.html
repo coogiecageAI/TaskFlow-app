@@ -11,12 +11,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 40px 20px;
         }
 
         .auth-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 500px;
@@ -32,31 +32,27 @@
         .auth-header h1 {
             font-size: 2rem;
             margin-bottom: 10px;
-            color: var(--text-primary);
+            color: #212529;
         }
 
         .auth-header p {
-            color: var(--text-secondary);
+            color: #6c757d;
         }
 
         .form-footer {
             text-align: center;
             margin-top: 30px;
-            color: var(--text-secondary);
+            color: #6c757d;
         }
 
         .form-footer a {
-            color: var(--primary-blue);
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }
 
         .form-footer a:hover {
             text-decoration: underline;
-        }
-
-        .btn-full {
-            width: 100%;
         }
 
         .password-toggle {
@@ -66,9 +62,10 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: var(--text-secondary);
+            color: #6c757d;
             cursor: pointer;
             padding: 5px 10px;
+            font-size: 14px;
         }
 
         .input-wrapper {
@@ -89,14 +86,14 @@
             display: flex;
             align-items: center;
             margin: 30px 0;
-            color: var(--text-secondary);
+            color: #6c757d;
         }
 
         .divider::before,
         .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid var(--bg-tertiary);
+            border-bottom: 1px solid #e9ecef;
         }
 
         .divider span {
@@ -149,7 +146,7 @@
                 </div>
 
                 <div style="text-align: right; margin-bottom: 20px;">
-                    <a href="#" style="color: var(--primary-blue); text-decoration: none; font-size: 0.9rem;">
+                    <a href="#" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">
                         Forgot Password?
                     </a>
                 </div>
@@ -195,14 +192,57 @@
             const messageDiv = document.getElementById('message');
             messageDiv.className = `alert alert-${type}`;
             messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+        }
+
+        // Check for email verification in URL
+        async function checkEmailVerification() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const type = urlParams.get('type');
+
+            // Handle email verification callback
+            if (token || type === 'signup') {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('signinForm').style.display = 'none';
+
+                try {
+                    // Supabase automatically handles the token from the URL hash
+                    const { data, error } = await supabase.auth.getSession();
+
+                    if (error) throw error;
+
+                    if (data.session) {
+                        // User is verified and signed in
+                        showMessage('Email verified successfully! Redirecting to dashboard...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 2000);
+                    } else {
+                        // Verification complete but not signed in
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('signinForm').style.display = 'block';
+                        showMessage('Email verified! Please sign in with your credentials.', 'success');
+                        // Clean URL
+                        window.history.replaceState({}, document.title, 'signin.html');
+                    }
+                } catch (error) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('signinForm').style.display = 'block';
+                    showMessage('Verification complete. Please sign in.', 'info');
+                    // Clean URL
+                    window.history.replaceState({}, document.title, 'signin.html');
+                }
+            }
         }
 
         // Check if user is already signed in
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        async function checkExistingSession() {
+            const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 window.location.href = 'dashboard.html';
             }
-        });
+        }
 
         // Form submission
         document.getElementById('signinForm').addEventListener('submit', async function(e) {
@@ -240,6 +280,10 @@
                 }
             }
         });
+
+        // Initialize
+        checkEmailVerification();
+        checkExistingSession();
     </script>
 </body>
 </html>
