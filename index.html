@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Professional Task Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 300;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 80px;
+        }
+
+        .dashboard-preview {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .preview-header {
+            background: #f8f9fa;
+            padding: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .preview-table {
+            background: white;
+            padding: 30px;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .table-row:first-child {
+            background: white;
+            border: 2px solid #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .priority-high { background: #ffe5e5; color: #dc3545; }
+        .priority-medium { background: #fff4e5; color: #fd7e14; }
+        .priority-low { background: #e9ecef; color: #6c757d; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active { background: #e7f3ff; color: #007bff; }
+        .status-done { background: #e6f7ed; color: #28a745; }
+        .status-pending { background: #f8f9fa; color: #6c757d; }
+
+        .features {
+            padding: 100px 20px;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-description {
+            color: #6c757d;
+            line-height: 1.7;
+        }
+
+        .how-it-works {
+            padding: 100px 20px;
+            background: #f8f9fa;
+        }
+
+        .steps {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 50px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            min-width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .step-content p {
+            color: #6c757d;
+            line-height: 1.7;
+        }
+
+        .cta-section {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            text-align: center;
+            color: white;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer-links {
+            margin-top: 20px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            opacity: 0.8;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .step {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content fade-in">
+            <h1 class="hero-title">
+                Task Management,<br>
+                Made Simple
+            </h1>
+            <p class="hero-subtitle">
+                Organize your work, collaborate with your team, and accomplish more.<br>
+                A beautiful, intuitive platform for getting things done.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="register.html" class="btn btn-outline">Get Started Free</a>
+                <a href="signin.html" class="btn btn-outline">Sign In</a>
+            </div>
+
+            <div class="dashboard-preview slide-up">
+                <div class="preview-header">
+                    <div class="preview-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Active Tasks</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">High Priority</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-table">
+                    <div class="table-row">
+                        <div>Task</div>
+                        <div>Priority</div>
+                        <div>Status</div>
+                        <div>Due Date</div>
+                    </div>
+                    <div class="table-row">
+                        <div>Complete project proposal</div>
+                        <div><span class="priority-badge priority-high">High</span></div>
+                        <div><span class="status-badge status-active">Active</span></div>
+                        <div>May 20</div>
+                    </div>
+                    <div class="table-row">
+                        <div>Team meeting preparation</div>
+                        <div><span class="priority-badge priority-medium">Medium</span></div>
+                        <div><span class="status-badge status-done">Done</span></div>
+                        <div>May 18</div>
+                    </div>
+                    <div class="table-row">
+                        <div>Update portfolio website</div>
+                        <div><span class="priority-badge priority-low">Low</span></div>
+                        <div><span class="status-badge status-pending">Pending</span></div>
+                        <div>May 25</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title gradient-text">Everything You Need</h2>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✓</div>
+                    <h3 class="feature-title">Simple Task Management</h3>
+                    <p class="feature-description">
+                        Create, organize, and track tasks with an intuitive interface.
+                        Add priorities, due dates, and detailed notes.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">↗</div>
+                    <h3 class="feature-title">Team Collaboration</h3>
+                    <p class="feature-description">
+                        Share tasks with teammates. Assign work and track progress
+                        together in real-time.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Smart Filtering</h3>
+                    <p class="feature-description">
+                        Filter by priority, status, or date. Find exactly what you need
+                        when you need it.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">Works Everywhere</h3>
+                    <p class="feature-description">
+                        Access your tasks from any device. Desktop, tablet, or mobile—
+                        your data syncs seamlessly.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3 class="feature-title">Secure & Private</h3>
+                    <p class="feature-description">
+                        Your tasks are private and protected. Each user has their own
+                        secure workspace.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Export Options</h3>
+                    <p class="feature-description">
+                        Export tasks to CSV, PDF, or Markdown. Print customized views
+                        for meetings or reports.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title gradient-text">How It Works</h2>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Your Account</h3>
+                        <p>
+                            Sign up with your email address. We'll send a verification link
+                            to confirm your account. Takes less than a minute.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Add Your Tasks</h3>
+                        <p>
+                            Start creating tasks with priorities, due dates, and notes.
+                            Organize your work the way that makes sense for you.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Collaborate & Share</h3>
+                        <p>
+                            Assign tasks to team members by email. They'll receive instant
+                            notifications and can start working immediately.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Track Progress</h3>
+                        <p>
+                            Mark tasks complete, filter by priority, and export reports.
+                            Stay organized and productive.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Get Organized?</h2>
+            <p>Join thousands managing their tasks effectively</p>
+            <a href="register.html" class="btn btn-outline">Start Your Free Account</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 TaskFlow. Built for productive teams.</p>
+        <div class="footer-links">
+            <a href="signin.html">Sign In</a>
+            <a href="register.html">Register</a>
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+    </footer>
+</body>
+</html>

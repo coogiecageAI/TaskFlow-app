@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - TaskFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 50px 40px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .auth-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--text-secondary);
+        }
+
+        .form-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #message {
+            margin-bottom: 20px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: var(--text-secondary);
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container fade-in">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your tasks</p>
+            </div>
+
+            <div id="message"></div>
+            <div id="loading">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p>Signing you in...</p>
+            </div>
+
+            <form id="signinForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="form-input" 
+                        placeholder="you@example.com" 
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Enter your password" 
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <a href="#" style="color: var(--primary-blue); text-decoration: none; font-size: 0.9rem;">
+                        Forgot Password?
+                    </a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <a href="index.html" class="btn btn-secondary btn-full">
+                Back to Home
+            </a>
+
+            <div class="form-footer">
+                Don't have an account? <a href="register.html">Create Account</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const field = document.getElementById('password');
+            const button = field.nextElementSibling;
+
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = 'Hide';
+            } else {
+                field.type = 'password';
+                button.textContent = 'Show';
+            }
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `alert alert-${type}`;
+            messageDiv.textContent = text;
+        }
+
+        // Check if user is already signed in
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // Form submission
+        document.getElementById('signinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('signinForm').style.display = 'none';
+
+            try {
+                // Sign in with Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                // Success - redirect to dashboard
+                window.location.href = 'dashboard.html';
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('signinForm').style.display = 'block';
+
+                if (error.message.includes('Email not confirmed')) {
+                    showMessage('Please verify your email address before signing in. Check your inbox for the verification link.', 'error');
+                } else if (error.message.includes('Invalid login credentials')) {
+                    showMessage('Invalid email or password. Please try again.', 'error');
+                } else {
+                    showMessage(error.message, 'error');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
