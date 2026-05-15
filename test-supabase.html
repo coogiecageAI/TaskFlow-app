@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .test-item {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #ddd;
+            padding-left: 15px;
+        }
+        .test-item.pass {
+            border-left-color: #28a745;
+        }
+        .test-item.fail {
+            border-left-color: #dc3545;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔍 TaskFlow Supabase Diagnostic Test</h1>
+        <p>This page will check if your Supabase configuration is working correctly.</p>
+    </div>
+
+    <div class="test-box">
+        <h2>Test Results:</h2>
+        <div id="results">
+            <div class="status info">Running tests...</div>
+        </div>
+    </div>
+
+    <div class="test-box">
+        <h2>Console Output:</h2>
+        <div id="console" style="background: #f4f4f4; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 14px; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Load Supabase library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Load config -->
+    <script src="config.js"></script>
+
+    <!-- Run tests -->
+    <script>
+        const results = document.getElementById('results');
+        const consoleDiv = document.getElementById('console');
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        function logToPage(message, type = 'log') {
+            const color = type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'black';
+            consoleDiv.innerHTML += `<div style="color: ${color}; margin: 5px 0;">${message}</div>`;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToPage(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToPage('ERROR: ' + args.join(' '), 'error');
+        };
+
+        // Run tests after a short delay to ensure everything is loaded
+        setTimeout(runTests, 500);
+
+        function runTests() {
+            let html = '';
+            let allPassed = true;
+
+            // Test 1: Supabase library loaded
+            html += '<div class="test-item ' + (typeof window.supabase !== 'undefined' ? 'pass' : 'fail') + '">';
+            html += '<strong>Test 1:</strong> Supabase library loaded from CDN<br>';
+            if (typeof window.supabase !== 'undefined') {
+                html += '<span style="color: green;">✅ PASS</span> - Supabase library found';
+            } else {
+                html += '<span style="color: red;">❌ FAIL</span> - Supabase library not found<br>';
+                html += '<small>Check your internet connection or CDN link</small>';
+                allPassed = false;
+            }
+            html += '</div>';
+
+            // Test 2: config.js loaded
+            html += '<div class="test-item ' + (typeof SUPABASE_URL !== 'undefined' ? 'pass' : 'fail') + '">';
+            html += '<strong>Test 2:</strong> config.js file loaded<br>';
+            if (typeof SUPABASE_URL !== 'undefined') {
+                html += '<span style="color: green;">✅ PASS</span> - config.js loaded successfully';
+            } else {
+                html += '<span style="color: red;">❌ FAIL</span> - config.js not loaded<br>';
+                html += '<small>Make sure config.js is in the same folder as this file</small>';
+                allPassed = false;
+            }
+            html += '</div>';
+
+            // Test 3: Credentials configured
+            if (typeof SUPABASE_URL !== 'undefined') {
+                const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE' && 
+                                 SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE';
+
+                html += '<div class="test-item ' + (configured ? 'pass' : 'fail') + '">';
+                html += '<strong>Test 3:</strong> Supabase credentials configured<br>';
+                if (configured) {
+                    html += '<span style="color: green;">✅ PASS</span> - Credentials are set<br>';
+                    html += '<small>URL: ' + SUPABASE_URL + '</small>';
+                } else {
+                    html += '<span style="color: red;">❌ FAIL</span> - Using placeholder credentials<br>';
+                    html += '<small>You need to update config.js with your real Supabase URL and key</small>';
+                    allPassed = false;
+                }
+                html += '</div>';
+            }
+
+            // Test 4: Supabase client initialized
+            html += '<div class="test-item ' + (typeof supabase !== 'undefined' ? 'pass' : 'fail') + '">';
+            html += '<strong>Test 4:</strong> Supabase client initialized<br>';
+            if (typeof supabase !== 'undefined') {
+                html += '<span style="color: green;">✅ PASS</span> - Client ready to use<br>';
+                html += '<small>Type: ' + typeof supabase + '</small>';
+            } else {
+                html += '<span style="color: red;">❌ FAIL</span> - Client not initialized<br>';
+                html += '<small>Check previous test failures</small>';
+                allPassed = false;
+            }
+            html += '</div>';
+
+            // Test 5: Can access auth methods
+            if (typeof supabase !== 'undefined') {
+                const hasAuth = supabase.auth && typeof supabase.auth.signUp === 'function';
+
+                html += '<div class="test-item ' + (hasAuth ? 'pass' : 'fail') + '">';
+                html += '<strong>Test 5:</strong> Authentication methods available<br>';
+                if (hasAuth) {
+                    html += '<span style="color: green;">✅ PASS</span> - supabase.auth.signUp() is available';
+                } else {
+                    html += '<span style="color: red;">❌ FAIL</span> - Auth methods not found';
+                    allPassed = false;
+                }
+                html += '</div>';
+            }
+
+            // Final summary
+            html += '<div style="margin-top: 20px; padding: 20px; background: ' + 
+                    (allPassed ? '#d4edda' : '#f8d7da') + 
+                    '; border-radius: 8px; font-weight: 600;">';
+
+            if (allPassed) {
+                html += '<span style="color: #155724; font-size: 18px;">🎉 ALL TESTS PASSED!</span><br>';
+                html += '<p style="font-weight: normal; margin-top: 10px;">Your Supabase configuration is working correctly. You can now use the application.</p>';
+                html += '<button onclick="window.location.href='register.html'">Go to Registration Page</button>';
+            } else {
+                html += '<span style="color: #721c24; font-size: 18px;">⚠️ TESTS FAILED</span><br>';
+                html += '<p style="font-weight: normal; margin-top: 10px;">Please fix the failed tests above, then refresh this page.</p>';
+                html += '<button onclick="location.reload()">Refresh Tests</button>';
+            }
+
+            html += '</div>';
+
+            results.innerHTML = html;
+        }
+
+        console.log('Diagnostic test page loaded');
+        console.log('Waiting for all scripts to initialize...');
+    </script>
+</body>
+</html>
