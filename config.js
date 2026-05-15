@@ -1,35 +1,37 @@
 // TaskFlow - Supabase Configuration
-// Replace these with your Supabase project credentials from Settings > API
+// Replace these values with the Project URL and anon public key from Supabase Dashboard > Settings > API
 
 const SUPABASE_URL = 'https://xhbehtmumxtrnewrdmae.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmVodG11bXh0cm5ld3JkbWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODQ0MzQsImV4cCI6MjA5NDM2MDQzNH0.02qecN1rdjtvkApwy9tue8BhEqH55RQCjieRkZkm0GU';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoYmVodG11bXh0cm5ld3JkbWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODQ0MzQsImV4cCI6MjA5NDM2MDQzNH0.02qecN1rdjtvkApwy9tue8BhEqH55RQCjieRkZkm0GU';
 
-let supabase = null;
+let taskflowSupabase = null;
 
 function initializeSupabase() {
-  if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
-    console.error('Supabase library not loaded. Make sure the CDN script is included before config.js');
-    return false;
+  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+    console.error('Supabase JS library is not loaded. Include the CDN script before config.js');
+    return null;
   }
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error('Supabase credentials are missing. Update config.js with your actual project values.');
-    return false;
+    console.error('Supabase credentials are missing.');
+    return null;
   }
 
-  if (SUPABASE_URL.includes('YOUR_SUPABASE_URL_HERE') || SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY_HERE')) {
-    console.error('Supabase credentials still contain placeholders.');
-    return false;
+  if (
+    SUPABASE_URL === 'YOUR_SUPABASE_PROJECT_URL' ||
+    SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_PUBLIC_KEY'
+  ) {
+    console.error('Supabase credentials still use placeholders. Update config.js with real values from Supabase.');
+    return null;
   }
 
   try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.supabaseClient = supabase;
-    console.log('Supabase initialized successfully');
-    return true;
+    taskflowSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.taskflowSupabase = taskflowSupabase;
+    return taskflowSupabase;
   } catch (error) {
-    console.error('Error initializing Supabase:', error);
-    return false;
+    console.error('Failed to initialize Supabase:', error);
+    return null;
   }
 }
 

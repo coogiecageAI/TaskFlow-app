@@ -6,41 +6,20 @@
   <title>Register - TaskFlow</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
     .auth-shell { width: 100%; max-width: 560px; }
-    .auth-card {
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(10px);
-      border-radius: 18px;
-      padding: 36px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-    }
+    .auth-card { background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); border-radius: 18px; padding: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
     .auth-header { text-align: center; margin-bottom: 28px; }
     .auth-header h1 { font-size: clamp(2rem, 4vw, 2.5rem); margin-bottom: 10px; color: #212529; }
     .auth-header p { color: #6c757d; margin: 0; }
     .password-wrap { position: relative; }
-    .toggle-password {
-      position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
-      background: none; border: none; color: #667eea; font-weight: 600; cursor: pointer; padding: 4px 6px;
-    }
-    .password-rules {
-      margin-top: 10px; padding: 14px 16px; border-radius: 12px;
-      background: #f8f9fa; border: 1px solid #e9ecef; font-size: 0.92rem;
-    }
+    .toggle-password { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); background: none; border: none; color: #667eea; font-weight: 600; cursor: pointer; padding: 4px 6px; }
+    .password-rules { margin-top: 10px; padding: 14px 16px; border-radius: 12px; background: #f8f9fa; border: 1px solid #e9ecef; font-size: 0.92rem; }
     .password-rules ul { margin: 8px 0 0 18px; padding: 0; color: #6c757d; }
     .auth-footer { text-align: center; margin-top: 20px; color: #6c757d; }
     .auth-footer a { color: #667eea; font-weight: 600; text-decoration: none; }
     .auth-footer a:hover { text-decoration: underline; }
-    .loading-row {
-      display: none; align-items: center; gap: 12px; justify-content: center;
-      margin-bottom: 18px; color: #6c757d;
-    }
+    .loading-row { display: none; align-items: center; gap: 12px; justify-content: center; margin-bottom: 18px; color: #6c757d; }
     .loading-row.active { display: flex; }
     .hidden { display: none !important; }
   </style>
@@ -107,22 +86,9 @@
     </section>
   </main>
 
-  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <script>
-    const SUPABASE_URL = 'https://xhbehtmumxtrnewrdmae.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmVodG11bXh0cm5ld3JkbWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODQ0MzQsImV4cCI6MjA5NDM2MDQzNH0.02qecN1rdjtvkApwy9tue8BhEqH55RQCjieRkZkm0GU';
-
-    let supabaseClient = null;
-
-    function initClient() {
-      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-        throw new Error('Supabase CDN library failed to load.');
-      }
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      return supabaseClient;
-    }
-
     const form = document.getElementById('registerForm');
     const fullNameInput = document.getElementById('fullName');
     const emailInput = document.getElementById('email');
@@ -151,6 +117,10 @@
       return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*]/.test(password);
     }
 
+    function getClient() {
+      return window.taskflowSupabase || null;
+    }
+
     document.querySelectorAll('.toggle-password').forEach((button) => {
       button.addEventListener('click', () => {
         const target = document.getElementById(button.dataset.target);
@@ -159,13 +129,6 @@
         button.textContent = isPassword ? 'Hide' : 'Show';
       });
     });
-
-    try {
-      initClient();
-      console.log('Register page Supabase client initialized');
-    } catch (error) {
-      showAlert('error', error.message);
-    }
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -192,21 +155,20 @@
         return;
       }
 
-      if (!supabaseClient) {
-        showAlert('error', 'Supabase client is unavailable on this page.');
+      const client = getClient();
+      if (!client) {
+        showAlert('error', 'Supabase is not initialized. Update config.js with your real Project URL and anon public key from Supabase Settings > API.');
         return;
       }
 
       setLoading(true);
 
       try {
-        const { data, error } = await supabaseClient.auth.signUp({
+        const { data, error } = await client.auth.signUp({
           email,
           password,
           options: {
-            data: {
-              fullname: fullName
-            }
+            data: { fullname: fullName }
           }
         });
 
