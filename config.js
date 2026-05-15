@@ -12,23 +12,23 @@ let supabase;
 function initializeSupabase() {
     // Check if Supabase library is loaded
     if (typeof window.supabase === 'undefined') {
-        console.error('❌ Supabase library not loaded! Make sure the CDN script is included before config.js');
+        console.error('Supabase library not loaded! Make sure the CDN script is included before config.js');
         return false;
     }
 
     // Check if credentials are configured
     if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
-        console.error('❌ Supabase credentials not configured! Please update config.js with your actual credentials.');
+        console.error('Supabase credentials not configured! Please update config.js with your actual credentials.');
         return false;
     }
 
     // Initialize the client
     try {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized successfully');
+        console.log('Supabase initialized successfully');
         return true;
     } catch (error) {
-        console.error('❌ Error initializing Supabase:', error);
+        console.error('Error initializing Supabase:', error);
         return false;
     }
 }
