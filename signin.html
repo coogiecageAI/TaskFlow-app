@@ -198,11 +198,11 @@
         // Check for email verification in URL
         async function checkEmailVerification() {
             const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
+            const tokenHash = urlParams.get('token_hash');
             const type = urlParams.get('type');
 
-            // Handle email verification callback
-            if (token || type === 'signup') {
+            // Handle email verification callback: Supabase confirm email link
+            if (tokenHash && type === 'signup') {
                 document.getElementById('loading').style.display = 'block';
                 document.getElementById('signinForm').style.display = 'none';
 
