@@ -125,9 +125,6 @@
         }
 
         .filter-btn {
-      background: #f1f3f5;
-      color: #212529;
-
             padding: 10px 20px;
             background: var(--bg-secondary);
             border: 2px solid transparent;
@@ -661,6 +658,28 @@
         let currentUser = null;
         let allTasks = [];
         let currentFilter = 'all';
+        let sortState = { field: null, direction: 'asc' };
+
+        function applySort(tasks) {
+            if (!sortState.field) return tasks;
+            const { field, direction } = sortState;
+            const sorted = [...tasks].sort((a, b) => {
+                let va = a[field];
+                let vb = b[field];
+                if (field.includes('date')) {
+                    va = va ? new Date(va) : null;
+                    vb = vb ? new Date(vb) : null;
+                }
+                if (va === vb) return 0;
+                if (va === null || va === undefined) return 1;
+                if (vb === null || vb === undefined) return -1;
+                if (va < vb) return direction === 'asc' ? -1 : 1;
+                if (va > vb) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            return sorted;
+        }
+
 
         function getClient() {
             if (window.taskflowSupabase) return window.taskflowSupabase;
@@ -759,7 +778,7 @@
 
             filteredTasks = applySort(filteredTasks);
 
-    tbody.innerHTML = filteredTasks.map(task => `
+        tbody.innerHTML = filteredTasks.map(task => `
                 <tr class="${task.archived ? 'archived' : ''}" data-task-id="${task.id}">
                     <td>${task.id}</td>
                     <td>
@@ -810,6 +829,20 @@
 
         // Filter tasks
         document.querySelectorAll('.filter-btn').forEach(btn => {
+            document.querySelectorAll('thead th[data-sort]').forEach(th => {
+                th.style.cursor = 'pointer';
+                th.addEventListener('click', () => {
+                    const field = th.getAttribute('data-sort');
+                    if (sortState.field === field) {
+                        sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortState.field = field;
+                        sortState.direction = 'asc';
+                    }
+                    renderTasks();
+                });
+            });
+
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
@@ -846,24 +879,10 @@
         }
 
         // Save task
-        function showTaskError(message) {
-      const el = document.getElementById('taskError');
-      if (!el) return;
-      el.textContent = message;
-      el.style.display = 'block';
-    }
-
-    function clearTaskError() {
-      const el = document.getElementById('taskError');
-      if (!el) return;
-      el.textContent = '';
-      el.style.display = 'none';
-    }
-
-    async function saveTask() {
+        async function saveTask() {
             const client = getClient();
             if (!client || !currentUser) {
-                showTaskError('Supabase client is not initialized. Please refresh and sign in again.');
+                alert('Supabase client is not initialized. Please refresh and sign in again.');
                 return;
             }
 
@@ -874,12 +893,12 @@
             const endDate = document.getElementById('taskEndDate').value;
 
             if (!name || !priority || !status || !startDate || !endDate) {
-                showTaskError('Please complete all required fields.');
+                alert('Please complete all required fields.');
                 return;
             }
 
             if (endDate < startDate) {
-                showTaskError('End date cannot be before start date.');
+                alert('End date cannot be before start date.');
                 return;
             }
 
@@ -911,10 +930,7 @@
                         .select();
 
                     if (error) throw error;
-                            if (taskData.assignee && taskData.assignee.trim() !== '') {
-                    await assignTask(data[0], taskData.assignee);
-                    await archiveTask(data[0].id);
-                }
+                    // Optional: handle assign/archiving here later
                 }
 
                 closeModal('taskModal');
@@ -922,7 +938,7 @@
 
             } catch (error) {
                 console.error('Error saving task:', error);
-                showTaskError('Error saving task: ' + (error.message || 'Unknown error'));
+                alert('Error saving task: ' + (error.message || 'Unknown error'));
             }
         }
 
