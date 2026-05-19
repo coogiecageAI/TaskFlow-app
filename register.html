@@ -1,195 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register - TaskFlow</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .auth-shell { width: 100%; max-width: 560px; }
-    .auth-card { background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); border-radius: 18px; padding: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-    .auth-header { text-align: center; margin-bottom: 28px; }
-    .auth-header h1 { font-size: clamp(2rem, 4vw, 2.5rem); margin-bottom: 10px; color: #212529; }
-    .auth-header p { color: #6c757d; margin: 0; }
-    .password-wrap { position: relative; }
-    .toggle-password { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); background: none; border: none; color: #667eea; font-weight: 600; cursor: pointer; padding: 4px 6px; }
-    .password-rules { margin-top: 10px; padding: 14px 16px; border-radius: 12px; background: #f8f9fa; border: 1px solid #e9ecef; font-size: 0.92rem; }
-    .password-rules ul { margin: 8px 0 0 18px; padding: 0; color: #6c757d; }
-    .auth-footer { text-align: center; margin-top: 20px; color: #6c757d; }
-    .auth-footer a { color: #667eea; font-weight: 600; text-decoration: none; }
-    .auth-footer a:hover { text-decoration: underline; }
-    .loading-row { display: none; align-items: center; gap: 12px; justify-content: center; margin-bottom: 18px; color: #6c757d; }
-    .loading-row.active { display: flex; }
-    .hidden { display: none !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TaskFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 50px 40px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .auth-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+
+        .password-requirements {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+
+        .password-requirements ul {
+            margin: 10px 0 0 20px;
+            color: var(--text-secondary);
+        }
+
+        .password-requirements li {
+            margin: 5px 0;
+        }
+
+        .password-requirements li.valid {
+            color: #28a745;
+        }
+
+        .password-requirements li.invalid {
+            color: #dc3545;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--text-secondary);
+        }
+
+        .form-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #message {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-  <main class="auth-shell">
-    <section class="auth-card card fade-in">
-      <div class="auth-header">
-        <h1>Create Your Account</h1>
-        <p>Start organizing your tasks today.</p>
-      </div>
+    <div class="auth-page">
+        <div class="auth-container fade-in">
+            <div class="auth-header">
+                <h1>Create Your Account</h1>
+                <p>Start organizing your tasks today</p>
+            </div>
 
-      <div id="loadingRow" class="loading-row" aria-live="polite">
-        <div class="spinner"></div>
-        <span>Creating your account...</span>
-      </div>
+            <div id="message"></div>
+            <div id="loading">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p>Creating your account...</p>
+            </div>
 
-      <div id="successAlert" class="alert alert-success hidden" role="alert"></div>
-      <div id="errorAlert" class="alert alert-error hidden" role="alert"></div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Full Name</label>
+                    <input 
+                        type="text" 
+                        id="fullName" 
+                        class="form-input" 
+                        placeholder="John Doe" 
+                        required
+                    >
+                </div>
 
-      <form id="registerForm" novalidate>
-        <div class="form-group">
-          <label class="form-label" for="fullName">Full Name</label>
-          <input type="text" id="fullName" class="form-input" required autocomplete="name" />
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="form-input" 
+                        placeholder="you@example.com" 
+                        required
+                    >
+                    <small style="color: var(--text-secondary); font-size: 0.85rem;">
+                        This will be your username for signing in
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Create a secure password" 
+                            required
+                        >
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <div class="password-requirements">
+                    <strong>Password must contain:</strong>
+                    <ul id="passwordChecks">
+                        <li id="check-length">At least 8 characters</li>
+                        <li id="check-capital">One uppercase letter</li>
+                        <li id="check-number">One number</li>
+                        <li id="check-special">One special character (!@#$%^&*)</li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            class="form-input" 
+                            placeholder="Re-enter your password" 
+                            required
+                        >
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full mt-3">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="form-footer">
+                Already have an account? <a href="signin.html">Sign In</a>
+            </div>
         </div>
+    </div>
 
-        <div class="form-group">
-          <label class="form-label" for="email">Email Address</label>
-          <input type="email" id="email" class="form-input" required autocomplete="email" />
-          <small style="color:#6c757d; display:block; margin-top:8px;">This will be your username for signing in.</small>
-        </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        // Password validation
+        const passwordInput = document.getElementById('password');
+        const checks = {
+            length: document.getElementById('check-length'),
+            capital: document.getElementById('check-capital'),
+            number: document.getElementById('check-number'),
+            special: document.getElementById('check-special')
+        };
 
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <div class="password-wrap">
-            <input type="password" id="password" class="form-input" required autocomplete="new-password" />
-            <button type="button" class="toggle-password" data-target="password">Show</button>
-          </div>
-          <div class="password-rules">
-            <strong>Password must contain:</strong>
-            <ul>
-              <li>At least 8 characters</li>
-              <li>One uppercase letter</li>
-              <li>One number</li>
-              <li>One special character (!@#$%^&*)</li>
-            </ul>
-          </div>
-        </div>
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
 
-        <div class="form-group">
-          <label class="form-label" for="confirmPassword">Confirm Password</label>
-          <div class="password-wrap">
-            <input type="password" id="confirmPassword" class="form-input" required autocomplete="new-password" />
-            <button type="button" class="toggle-password" data-target="confirmPassword">Show</button>
-          </div>
-        </div>
+            // Length check
+            if (password.length >= 8) {
+                checks.length.classList.add('valid');
+                checks.length.classList.remove('invalid');
+            } else {
+                checks.length.classList.add('invalid');
+                checks.length.classList.remove('valid');
+            }
 
-        <button type="submit" id="submitBtn" class="btn btn-primary btn-full">Create Account</button>
-      </form>
+            // Capital letter check
+            if (/[A-Z]/.test(password)) {
+                checks.capital.classList.add('valid');
+                checks.capital.classList.remove('invalid');
+            } else {
+                checks.capital.classList.add('invalid');
+                checks.capital.classList.remove('valid');
+            }
 
-      <div class="auth-footer">
-        Already have an account? <a href="signin.html">Sign In</a>
-      </div>
-    </section>
-  </main>
+            // Number check
+            if (/[0-9]/.test(password)) {
+                checks.number.classList.add('valid');
+                checks.number.classList.remove('invalid');
+            } else {
+                checks.number.classList.add('invalid');
+                checks.number.classList.remove('valid');
+            }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script>
-    const form = document.getElementById('registerForm');
-    const fullNameInput = document.getElementById('fullName');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-    const submitBtn = document.getElementById('submitBtn');
-    const loadingRow = document.getElementById('loadingRow');
-    const successAlert = document.getElementById('successAlert');
-    const errorAlert = document.getElementById('errorAlert');
-
-    function showAlert(type, message) {
-      successAlert.classList.add('hidden');
-      errorAlert.classList.add('hidden');
-      const el = type === 'success' ? successAlert : errorAlert;
-      el.textContent = message;
-      el.classList.remove('hidden');
-    }
-
-    function setLoading(isLoading) {
-      loadingRow.classList.toggle('active', isLoading);
-      submitBtn.disabled = isLoading;
-      submitBtn.textContent = isLoading ? 'Creating Account...' : 'Create Account';
-    }
-
-    function validatePassword(password) {
-      return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*]/.test(password);
-    }
-
-    function getClient() {
-      return window.taskflowSupabase || null;
-    }
-
-    document.querySelectorAll('.toggle-password').forEach((button) => {
-      button.addEventListener('click', () => {
-        const target = document.getElementById(button.dataset.target);
-        const isPassword = target.type === 'password';
-        target.type = isPassword ? 'text' : 'password';
-        button.textContent = isPassword ? 'Hide' : 'Show';
-      });
-    });
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      successAlert.classList.add('hidden');
-      errorAlert.classList.add('hidden');
-
-      const fullName = fullNameInput.value.trim();
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      const confirmPassword = confirmPasswordInput.value;
-
-      if (!fullName || !email || !password || !confirmPassword) {
-        showAlert('error', 'Please complete all fields.');
-        return;
-      }
-
-      if (!validatePassword(password)) {
-        showAlert('error', 'Password must be at least 8 characters long and include an uppercase letter, a number, and a special character.');
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        showAlert('error', 'Passwords do not match.');
-        return;
-      }
-
-      const client = getClient();
-      if (!client) {
-        showAlert('error', 'Supabase is not initialized. Update config.js with your real Project URL and anon public key from Supabase Settings > API.');
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const { data, error } = await client.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { fullname: fullName }
-          }
+            // Special character check
+            if (/[!@#$%^&*]/.test(password)) {
+                checks.special.classList.add('valid');
+                checks.special.classList.remove('invalid');
+            } else {
+                checks.special.classList.add('invalid');
+                checks.special.classList.remove('valid');
+            }
         });
 
-        if (error) throw error;
+        // Toggle password visibility
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
 
-        form.reset();
-
-        if (data.user && data.session) {
-          showAlert('success', 'Account created successfully. Redirecting to your dashboard...');
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1200);
-        } else {
-          showAlert('success', 'Account created. Please check your email to confirm your registration before signing in.');
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = 'Hide';
+            } else {
+                field.type = 'password';
+                button.textContent = 'Show';
+            }
         }
-      } catch (error) {
-        showAlert('error', error.message || 'Unable to create your account. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    });
-  </script>
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `alert alert-${type}`;
+            messageDiv.textContent = text;
+        }
+
+        // Form submission
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+
+            // Validate password requirements
+            const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                showMessage('Password does not meet requirements', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+
+            try {
+                // Register user with Supabase
+                const client = window.taskflowSupabase || window.supabaseClient || supabase;
+                const { data, error } = await client.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                            fullname: fullName,
+                            display_name: fullName
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                // Success - show verification message
+                document.getElementById('loading').style.display = 'none';
+                showMessage(
+                    'Account created! Please check your email to verify your account before signing in.',
+                    'success'
+                );
+
+                // Redirect to signin after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 3000);
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+                showMessage(error.message, 'error');
+            }
+        });
+    </script>
 </body>
 </html>
