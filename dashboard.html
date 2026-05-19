@@ -504,6 +504,9 @@
                 <button class="close" onclick="closeModal('taskModal')">&times;</button>
             </div>
             <div class="modal-body">
+                <div id="taskError"
+                    class="alert alert-error"
+                    style="display:none;color:#dc3545;margin-bottom:10px;"></div>
                 <form id="taskForm">
                     <input type="hidden" id="taskId">
 
@@ -684,6 +687,20 @@
             return sorted;
         }
 
+        function showTaskError(message) {
+            const el = document.getElementById('taskError');
+            if (!el) return;
+            el.textContent = message;
+            el.style.display = 'block';
+        }
+
+        function clearTaskError() {
+            const el = document.getElementById('taskError');
+            if (!el) return;
+            el.textContent = '';
+            el.style.display = 'none';
+        }
+
         function getClient() {
             if (window.taskflowSupabase) return window.taskflowSupabase;
             if (window.supabaseClient) return window.supabaseClient;
@@ -691,7 +708,7 @@
             return null;
         }
 
-        let sortState = { field: null, direction: 'asc' };
+        //let sortState = { field: null, direction: 'asc' };
 
 
         // Check authentication on load
@@ -887,9 +904,10 @@
 
         // Save task
         async function saveTask() {
+            clearTaskError();
             const client = getClient();
             if (!client || !currentUser) {
-                alert('Supabase client is not initialized. Please refresh and sign in again.');
+                showTaskError('Supabase client is not initialized. Please refresh and sign in again.');
                 return;
             }
 
@@ -900,12 +918,12 @@
             const endDate = document.getElementById('taskEndDate').value;
 
             if (!name || !priority || !status || !startDate || !endDate) {
-                alert('Please complete all required fields.');
+                showTaskError('Please complete all required fields.');
                 return;
             }
 
             if (endDate < startDate) {
-                alert('End date cannot be before start date.');
+                showTaskError('End date cannot be before start date.');
                 return;
             }
 
@@ -945,7 +963,7 @@
 
             } catch (error) {
                 console.error('Error saving task:', error);
-                alert('Error saving task: ' + (error.message || 'Unknown error'));
+                showTaskError('Error saving task: ' + (error.message || 'Unknown error'));
             }
         }
 
