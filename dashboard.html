@@ -879,10 +879,25 @@
         }
 
         // Save task
+        function showTaskError(message) {
+            const el = document.getElementById('taskError');
+            if (!el) return;
+            el.textContent = message;
+            el.style.display = 'block';
+        }
+
+        function clearTaskError() {
+            const el = document.getElementById('taskError');
+            if (!el) return;
+            el.textContent = '';
+            el.style.display = 'none';
+        }
+
         async function saveTask() {
+            clearTaskError();
             const client = getClient();
             if (!client || !currentUser) {
-                alert('Supabase client is not initialized. Please refresh and sign in again.');
+                showTaskError('Supabase client is not initialized. Please refresh and sign in again.');
                 return;
             }
 
@@ -893,12 +908,12 @@
             const endDate = document.getElementById('taskEndDate').value;
 
             if (!name || !priority || !status || !startDate || !endDate) {
-                alert('Please complete all required fields.');
+                showTaskError('Please complete all required fields.');
                 return;
             }
 
             if (endDate < startDate) {
-                alert('End date cannot be before start date.');
+                showTaskError('End date cannot be before start date.');
                 return;
             }
 
@@ -930,7 +945,10 @@
                         .select();
 
                     if (error) throw error;
-                    // Optional: handle assign/archiving here later
+                                    if (taskData.assignee && taskData.assignee.trim() !== '') {
+                    await assignTask(data[0], taskData.assignee);
+                    await archiveTask(data[0].id);
+                }
                 }
 
                 closeModal('taskModal');
@@ -938,7 +956,7 @@
 
             } catch (error) {
                 console.error('Error saving task:', error);
-                alert('Error saving task: ' + (error.message || 'Unknown error'));
+                showTaskError('Error saving task: ' + (error.message || 'Unknown error'));
             }
         }
 
