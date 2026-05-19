@@ -941,20 +941,29 @@
             };
 
             try {
-                if (!taskId) {
-                    const { data, error } = await client
+                if (taskId) {
+                    const { error } = await client
                         .from('tasks')
-                        .insert([taskData])
-                        .select();
+                        .update(taskData)
+                        .eq('id', taskId);
 
                     if (error) throw error;
+                } else {
+                    if (!taskId) {
+                        const { data, error } = await client
+                            .from('tasks')
+                            .insert([taskData])
+                            .select();
 
-                    if (taskData.assignee && taskData.assignee.trim() !== '') {
-                        await assignTask(data[0], taskData.assignee);
-                        await archiveTask(data[0].id);
+                        if (error) throw error;
+
+                        if (taskData.assignee && taskData.assignee.trim() !== '') {
+                                await assignTask(data[0], taskData.assignee);
+                                await archiveTask(data[0].id);
+                        }
                     }
+                    // Optional: handle assign/archiving here later
                 }
-            }
 
                 closeModal('taskModal');
                 loadTasks();
