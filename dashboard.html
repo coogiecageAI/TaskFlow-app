@@ -758,7 +758,10 @@
                 <tr class="${task.archived ? 'archived' : ''}" data-task-id="${task.id}">
                     <td>${task.id}</td>
                     <td>
+                        <span style="cursor:pointer;text-decoration:underline;"
+                        onclick="editTask(${task.id})">
                         ${task.task}
+                        </span>
                         ${task.assigned_by ? `<br><small style="color: var(--text-secondary);">Assigned by: ${task.assigned_by}</small>` : ''}
                         ${task.archived ? '<br><span class="priority-badge priority-low">Archived</span>' : ''}
                     </td>
