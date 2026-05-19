@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TaskFlow</title>
+    <title>Dashboard - TaskFlow v1</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Dashboard Specific Styles */
@@ -471,14 +471,14 @@
                     <table id="tasksTable">
                         <thead>
                             <tr>
-                                <th data-sort="id">ID</th>
-                                <th data-sort="task">Task</th>
-                                <th data-sort="priority">Priority</th>
-                                <th data-sort="status">Status</th>
-                                <th data-sort="start_date">Start Date</th>
-                                <th data-sort="end_date">End Date</th>
-                                <th data-sort="frequency">Frequency</th>
-                                <th data-sort="notes">Notes</th>
+                                <th>ID</th>
+                                <th>Task</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Frequency</th>
+                                <th>Notes</th>
                                 <th class="no-print">Actions</th>
                             </tr>
                         </thead>
@@ -658,28 +658,6 @@
         let currentUser = null;
         let allTasks = [];
         let currentFilter = 'all';
-        let sortState = { field: null, direction: 'asc' };
-
-        function applySort(tasks) {
-            if (!sortState.field) return tasks;
-            const { field, direction } = sortState;
-            const sorted = [...tasks].sort((a, b) => {
-                let va = a[field];
-                let vb = b[field];
-                if (field.includes('date')) {
-                    va = va ? new Date(va) : null;
-                    vb = vb ? new Date(vb) : null;
-                }
-                if (va === vb) return 0;
-                if (va === null || va === undefined) return 1;
-                if (vb === null || vb === undefined) return -1;
-                if (va < vb) return direction === 'asc' ? -1 : 1;
-                if (va > vb) return direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-            return sorted;
-        }
-
 
         function getClient() {
             if (window.taskflowSupabase) return window.taskflowSupabase;
@@ -776,13 +754,11 @@
                 return;
             }
 
-            filteredTasks = applySort(filteredTasks);
-
-        tbody.innerHTML = filteredTasks.map(task => `
+            tbody.innerHTML = filteredTasks.map(task => `
                 <tr class="${task.archived ? 'archived' : ''}" data-task-id="${task.id}">
                     <td>${task.id}</td>
                     <td>
-                        <span style="cursor:pointer;text-decoration:underline;" onclick="editTask(${task.id})">${task.task}</span>
+                        ${task.task}
                         ${task.assigned_by ? `<br><small style="color: var(--text-secondary);">Assigned by: ${task.assigned_by}</small>` : ''}
                         ${task.archived ? '<br><span class="priority-badge priority-low">Archived</span>' : ''}
                     </td>
@@ -829,20 +805,6 @@
 
         // Filter tasks
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            document.querySelectorAll('thead th[data-sort]').forEach(th => {
-                th.style.cursor = 'pointer';
-                th.addEventListener('click', () => {
-                    const field = th.getAttribute('data-sort');
-                    if (sortState.field === field) {
-                        sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        sortState.field = field;
-                        sortState.direction = 'asc';
-                    }
-                    renderTasks();
-                });
-            });
-
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
@@ -879,25 +841,10 @@
         }
 
         // Save task
-        function showTaskError(message) {
-            const el = document.getElementById('taskError');
-            if (!el) return;
-            el.textContent = message;
-            el.style.display = 'block';
-        }
-
-        function clearTaskError() {
-            const el = document.getElementById('taskError');
-            if (!el) return;
-            el.textContent = '';
-            el.style.display = 'none';
-        }
-
         async function saveTask() {
-            clearTaskError();
             const client = getClient();
             if (!client || !currentUser) {
-                showTaskError('Supabase client is not initialized. Please refresh and sign in again.');
+                alert('Supabase client is not initialized. Please refresh and sign in again.');
                 return;
             }
 
@@ -908,12 +855,12 @@
             const endDate = document.getElementById('taskEndDate').value;
 
             if (!name || !priority || !status || !startDate || !endDate) {
-                showTaskError('Please complete all required fields.');
+                alert('Please complete all required fields.');
                 return;
             }
 
             if (endDate < startDate) {
-                showTaskError('End date cannot be before start date.');
+                alert('End date cannot be before start date.');
                 return;
             }
 
@@ -945,10 +892,7 @@
                         .select();
 
                     if (error) throw error;
-                                    if (taskData.assignee && taskData.assignee.trim() !== '') {
-                    await assignTask(data[0], taskData.assignee);
-                    await archiveTask(data[0].id);
-                }
+                    // Optional: handle assign/archiving here later
                 }
 
                 closeModal('taskModal');
@@ -956,7 +900,7 @@
 
             } catch (error) {
                 console.error('Error saving task:', error);
-                showTaskError('Error saving task: ' + (error.message || 'Unknown error'));
+                alert('Error saving task: ' + (error.message || 'Unknown error'));
             }
         }
 
@@ -1209,9 +1153,9 @@
                 downloadFile(ics, `task-${task.id}.ics`, 'text/calendar');
             } else if (method === 'email') {
                 // Generate mailto link
-                const subject = encodeURIComponent(`Task: <span style="cursor:pointer;text-decoration:underline;" onclick="editTask(${task.id})">${task.task}</span>`);
+                const subject = encodeURIComponent(`Task: ${task.task}`);
                 const body = encodeURIComponent(`
-Task: <span style="cursor:pointer;text-decoration:underline;" onclick="editTask(${task.id})">${task.task}</span>
+Task: ${task.task}
 Priority: ${task.priority}
 Status: ${task.status}
 Start: ${formatDate(task.start_date)}
@@ -1244,14 +1188,14 @@ UID:task-${task.id}@taskflow.app
 DTSTAMP:${now}
 DTSTART:${start}
 DTEND:${end}
-SUMMARY:<span style="cursor:pointer;text-decoration:underline;" onclick="editTask(${task.id})">${task.task}</span>
+SUMMARY:${task.task}
 DESCRIPTION:Priority: ${task.priority}\nStatus: ${task.status}\nNotes: ${task.notes || 'None'}
 LOCATION:TaskFlow
 STATUS:CONFIRMED
 BEGIN:VALARM
 TRIGGER:-PT24H
 ACTION:DISPLAY
-DESCRIPTION:Reminder: <span style="cursor:pointer;text-decoration:underline;" onclick="editTask(${task.id})">${task.task}</span>
+DESCRIPTION:Reminder: ${task.task}
 END:VALARM
 END:VEVENT
 END:VCALENDAR`;
