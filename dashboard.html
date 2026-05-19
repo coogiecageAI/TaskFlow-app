@@ -659,9 +659,30 @@
         let allTasks = [];
         let currentFilter = 'all';
 
+        function getClient() {
+            if (window.taskflowSupabase) return window.taskflowSupabase;
+            if (window.supabaseClient) return window.supabaseClient;
+            if (typeof supabase !== 'undefined' && supabase) return supabase;
+            return null;
+        }
+
+
         // Check authentication on load
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const client = getClient();
+            if (!client) {
+                console.error('Supabase client is not initialized on dashboard.');
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            const { data: { session }, error } = await client.auth.getSession();
+
+            if (error) {
+                console.error('Error getting session:', error);
+                window.location.href = 'signin.html';
+                return;
+            }
 
             if (!session) {
                 window.location.href = 'signin.html';
@@ -669,7 +690,7 @@
             }
 
             currentUser = session.user;
-            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userEmail').textContent = currentUser.email || 'Signed in';
 
             // Load tasks
             loadTasks();
@@ -677,8 +698,13 @@
 
         // Load tasks from Supabase
         async function loadTasks() {
+            const client = getClient();
+            if (!client || !currentUser) {
+                console.error('Cannot load tasks: client or currentUser is missing.');
+                return;
+            }
             try {
-                const { data, error } = await supabase
+                const { data, error } = await client
                     .from('tasks')
                     .select('*')
                     .eq('user_id', currentUser.id)
@@ -1159,7 +1185,14 @@ END:VCALENDAR`;
 
         // Sign out
         async function signOut() {
-            await supabase.auth.signOut();
+            const client = getClient();
+            if (client) {
+                try {
+                    await client.auth.signOut();
+                } catch (error) {
+                    console.error('Error signing out:', error);
+                }
+            }
             window.location.href = 'signin.html';
         }
 
