@@ -195,20 +195,27 @@
             messageDiv.style.display = 'block';
         }
 
+
+        function getClient() {
+            return window.taskflowSupabase || window.supabaseClient || (typeof supabase !== 'undefined' ? supabase : null);
+        }
+
         // Check for email verification in URL
         async function checkEmailVerification() {
             const urlParams = new URLSearchParams(window.location.search);
-            const tokenHash = urlParams.get('token_hash');
+            const token = urlParams.get('token');
             const type = urlParams.get('type');
 
-            // Handle email verification callback: Supabase confirm email link
-            if (tokenHash && type === 'signup') {
+            // Handle email verification callback
+            if (token || type === 'signup') {
                 document.getElementById('loading').style.display = 'block';
                 document.getElementById('signinForm').style.display = 'none';
 
                 try {
                     // Supabase automatically handles the token from the URL hash
-                    const { data, error } = await supabase.auth.getSession();
+                    const client = getClient();
+                    if (!client) throw new Error('Supabase client is not initialized');
+                    const { data, error } = await client.auth.getSession();
 
                     if (error) throw error;
 
@@ -238,7 +245,9 @@
 
         // Check if user is already signed in
         async function checkExistingSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const client = getClient();
+            if (!client) return;
+            const { data: { session } } = await client.auth.getSession();
             if (session) {
                 window.location.href = 'dashboard.html';
             }
@@ -257,7 +266,9 @@
 
             try {
                 // Sign in with Supabase
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const client = getClient();
+                if (!client) throw new Error('Supabase client is not initialized');
+                const { data, error } = await client.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
