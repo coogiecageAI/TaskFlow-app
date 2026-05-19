@@ -941,22 +941,20 @@
             };
 
             try {
-                if (taskId) {
-                    const { error } = await client
-                        .from('tasks')
-                        .update(taskData)
-                        .eq('id', taskId);
-
-                    if (error) throw error;
-                } else {
+                if (!taskId) {
                     const { data, error } = await client
                         .from('tasks')
                         .insert([taskData])
                         .select();
 
                     if (error) throw error;
-                    // Optional: handle assign/archiving here later
+
+                    if (taskData.assignee && taskData.assignee.trim() !== '') {
+                        await assignTask(data[0], taskData.assignee);
+                        await archiveTask(data[0].id);
+                    }
                 }
+            }
 
                 closeModal('taskModal');
                 loadTasks();
