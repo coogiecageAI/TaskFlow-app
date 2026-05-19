@@ -471,14 +471,14 @@
                     <table id="tasksTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Task</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Frequency</th>
-                                <th>Notes</th>
+                                <th data-sort="id">ID</th>
+                                <th data-sort="task">Task</th>
+                                <th data-sort="priority">Priority</th>
+                                <th data-sort="status">Status</th>
+                                <th data-sort="start_date">Start Date</th>
+                                <th data-sort="end_date">End Date</th>
+                                <th data-sort="frequency">Frequency</th>
+                                <th data-sort="notes">Notes</th>
                                 <th class="no-print">Actions</th>
                             </tr>
                         </thead>
@@ -659,6 +659,31 @@
         let allTasks = [];
         let currentFilter = 'all';
 
+        let sortState1 = { field: null, direction: 'asc' };
+
+        function applySort(tasks) {
+            if (!sortState1.field) return tasks;
+            const { field, direction } = sortState1;
+            const sorted = [...tasks].sort((a, b) => {
+                let va = a[field];
+                let vb = b[field];
+
+                if (field.includes('date')) {
+                    va = va ? new Date(va) : null;
+                    vb = vb ? new Date(vb) : null;
+                }
+
+                if (va === vb) return 0;
+                if (va === null || va === undefined) return 1;
+                if (vb === null || vb === undefined) return -1;
+
+                if (va < vb) return direction === 'asc' ? -1 : 1;
+                if (va > vb) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            return sorted;
+        }
+
         function getClient() {
             if (window.taskflowSupabase) return window.taskflowSupabase;
             if (window.supabaseClient) return window.supabaseClient;
@@ -754,6 +779,9 @@
                 return;
             }
 
+            // apply sorting
+            filteredTasks = applySort(filteredTasks);
+
             tbody.innerHTML = filteredTasks.map(task => `
                 <tr class="${task.archived ? 'archived' : ''}" data-task-id="${task.id}">
                     <td>${task.id}</td>
@@ -812,6 +840,20 @@
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentFilter = this.dataset.filter;
+                renderTasks();
+            });
+        });
+
+        document.querySelectorAll('thead th[data-sort]').forEach(th => {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', () => {
+                const field = th.getAttribute('data-sort');
+                if (sortState.field === field) {
+                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortState.field = field;
+                    sortState.direction = 'asc';
+                }
                 renderTasks();
             });
         });
