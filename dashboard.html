@@ -848,11 +848,11 @@
             th.style.cursor = 'pointer';
             th.addEventListener('click', () => {
                 const field = th.getAttribute('data-sort');
-                if (sortState.field === field) {
-                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                if (sortState1.field === field) {
+                    sortState1.direction = sortState1.direction === 'asc' ? 'desc' : 'asc';
                 } else {
-                    sortState.field = field;
-                    sortState.direction = 'asc';
+                    sortState1.field = field;
+                    sortState1.direction = 'asc';
                 }
                 renderTasks();
             });
