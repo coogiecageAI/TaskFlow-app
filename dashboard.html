@@ -1,1210 +1,889 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TaskFlow</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Dashboard Specific Styles */
-        .dashboard {
-            min-height: 100vh;
-            background: #f8f9fa;
-        }
-
-        /* Navbar */
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .navbar-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .navbar-user {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .navbar-user span {
-            font-size: 0.95rem;
-        }
-
-        .btn-logout {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        /* Stats Dashboard */
-        .stats-section {
-            padding: 40px 20px;
-            background: white;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-            padding: 25px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .stat-card:hover {
-            border-color: var(--primary-blue);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-5px);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Controls Bar */
-        .controls-bar {
-            background: white;
-            padding: 20px;
-            margin: 0 20px 20px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            background: var(--bg-secondary);
-            border: 2px solid transparent;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            color: var(--text-primary);
-        }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: var(--primary-blue);
-            color: white;
-            border-color: var(--primary-blue);
-        }
-
-        .action-group {
-            margin-left: auto;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-icon {
-            padding: 10px 20px;
-            font-size: 0.9rem;
-        }
-
-        /* Tasks Table */
-        .tasks-section {
-            padding: 0 20px 40px;
-        }
-
-        .tasks-container {
-            background: white;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: var(--bg-secondary);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        th {
-            padding: 18px 15px;
-            text-align: left;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--bg-tertiary);
-        }
-
-        td {
-            padding: 18px 15px;
-            border-bottom: 1px solid var(--bg-tertiary);
-            font-size: 0.95rem;
-        }
-
-        tbody tr {
-            transition: all 0.2s;
-        }
-
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        tbody tr.archived {
-            opacity: 0.5;
-        }
-
-        /* Priority Badges */
-        .priority-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .priority-high { background: #ffe5e5; color: #dc3545; }
-        .priority-high-medium { background: #fff0e5; color: #fd7e14; }
-        .priority-medium { background: #fff4e5; color: #ffc107; }
-        .priority-medium-low { background: #e5f5ff; color: #17a2b8; }
-        .priority-low { background: #e9ecef; color: #6c757d; }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-not-started { background: #f8f9fa; color: #6c757d; }
-        .status-in-progress { background: #e7f3ff; color: #007bff; }
-        .status-completed { background: #e6f7ed; color: #28a745; }
-
-        /* Action Buttons */
-        .actions-cell {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn-table {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .btn-edit { background: #e7f3ff; color: #007bff; }
-        .btn-edit:hover { background: #007bff; color: white; }
-
-        .btn-complete { background: #e6f7ed; color: #28a745; }
-        .btn-complete:hover { background: #28a745; color: white; }
-
-        .btn-archive { background: #f8f9fa; color: #6c757d; }
-        .btn-archive:hover { background: #6c757d; color: white; }
-
-        .btn-delete { background: #ffe5e5; color: #dc3545; }
-        .btn-delete:hover { background: #dc3545; color: white; }
-
-        .btn-share { background: #fff4e5; color: #ffc107; }
-        .btn-share:hover { background: #ffc107; color: white; }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            overflow-y: auto;
-        }
-
-        .modal-content {
-            background: white;
-            margin: 50px auto;
-            max-width: 700px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .modal-header {
-            padding: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 1.5rem;
-            margin: 0;
-        }
-
-        .close {
-            color: white;
-            font-size: 2rem;
-            font-weight: 300;
-            cursor: pointer;
-            border: none;
-            background: none;
-            line-height: 1;
-        }
-
-        .close:hover {
-            opacity: 0.8;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .modal-footer {
-            padding: 20px 30px;
-            background: var(--bg-secondary);
-            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        /* Export Modal */
-        .export-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .export-card {
-            padding: 20px;
-            border: 2px solid var(--bg-tertiary);
-            border-radius: var(--radius-md);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .export-card:hover {
-            border-color: var(--primary-blue);
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .export-card.selected {
-            border-color: var(--primary-blue);
-            background: rgba(102, 126, 234, 0.1);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .action-group {
-                margin-left: 0;
-                width: 100%;
-            }
-
-            .navbar-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-        }
-
-        @media print {
-            .navbar, .controls-bar, .stats-section, .actions-cell, .modal {
-                display: none !important;
-            }
-
-            body {
-                background: white;
-            }
-
-            .tasks-container {
-                box-shadow: none;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - TaskFlow</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .dashboard {
+      min-height: 100vh;
+      background: #f8f9fa;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .navbar-user span {
+      font-size: 0.95rem;
+    }
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-logout:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .stats-section {
+      padding: 40px 20px;
+      background: white;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      border-color: #667eea;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      transform: translateY(-5px);
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .controls-bar {
+      background: white;
+      padding: 20px;
+      margin: 0 20px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+      max-width: 1600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 10px 20px;
+      background: #f1f3f5;
+      border: 2px solid transparent;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s;
+      color: #212529;
+    }
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    .action-group {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-icon {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+    }
+    .tasks-section {
+      padding: 0 20px 40px;
+    }
+    .tasks-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead {
+      background: #f1f3f5;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    th,
+    td {
+      padding: 18px 15px;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+    tbody tr:hover {
+      background: #f8f9fa;
+    }
+    tbody tr.archived {
+      opacity: 0.5;
+    }
+    .priority-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .priority-high {
+      background: #ffe5e5;
+      color: #dc3545;
+    }
+    .priority-high-medium {
+      background: #fff0e5;
+      color: #fd7e14;
+    }
+    .priority-medium {
+      background: #fff4e5;
+      color: #ffc107;
+    }
+    .priority-medium-low {
+      background: #e5f5ff;
+      color: #17a2b8;
+    }
+    .priority-low {
+      background: #e9ecef;
+      color: #6c757d;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .status-not-started {
+      background: #f8f9fa;
+      color: #6c757d;
+    }
+    .status-in-progress {
+      background: #e7f3ff;
+      color: #007bff;
+    }
+    .status-completed {
+      background: #e6f7ed;
+      color: #28a745;
+    }
+    .actions-cell {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-table {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .btn-edit {
+      background: #e7f3ff;
+      color: #007bff;
+    }
+    .btn-edit:hover {
+      background: #007bff;
+      color: white;
+    }
+    .btn-complete {
+      background: #e6f7ed;
+      color: #28a745;
+    }
+    .btn-complete:hover {
+      background: #28a745;
+      color: white;
+    }
+    .btn-archive {
+      background: #f8f9fa;
+      color: #6c757d;
+    }
+    .btn-archive:hover {
+      background: #6c757d;
+      color: white;
+    }
+    .btn-delete {
+      background: #ffe5e5;
+      color: #dc3545;
+    }
+    .btn-delete:hover {
+      background: #dc3545;
+      color: white;
+    }
+    .btn-share {
+      background: #fff4e5;
+      color: #ffc107;
+    }
+    .btn-share:hover {
+      background: #ffc107;
+      color: white;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+    }
+    .modal-content {
+      background: white;
+      margin: 50px auto;
+      max-width: 700px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+    .modal-header {
+      padding: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body {
+      padding: 30px;
+    }
+    .modal-footer {
+      padding: 20px 30px;
+      background: #f1f3f5;
+      border-radius: 0 0 16px 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .close {
+      color: white;
+      font-size: 2rem;
+      font-weight: 300;
+      cursor: pointer;
+      border: none;
+      background: none;
+      line-height: 1;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .navbar-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      .controls-bar {
+        margin: 20px 0;
+      }
+    }
+    @media print {
+      .navbar,
+      .controls-bar,
+      .actions-cell,
+      .modal {
+        display: none !important;
+      }
+      body {
+        background: white;
+      }
+      .tasks-container {
+        box-shadow: none;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard">
-
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="navbar-content">
-                <div class="navbar-brand">TaskFlow</div>
-                <div class="navbar-user">
-                    <span id="userEmail">Loading...</span>
-                    <button class="btn-logout" onclick="signOut()">Sign Out</button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Stats Dashboard -->
-        <section class="stats-section">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalTasks">0</div>
-                    <div class="stat-label">Total Tasks</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="activeTasks">0</div>
-                    <div class="stat-label">Active</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="highPriority">0</div>
-                    <div class="stat-label">High Priority</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="inProgress">0</div>
-                    <div class="stat-label">In Progress</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="completed">0</div>
-                    <div class="stat-label">Completed</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="archived">0</div>
-                    <div class="stat-label">Archived</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Controls Bar -->
-        <div class="controls-bar container">
-            <div class="filter-group">
-                <button class="filter-btn active" data-filter="all">All Tasks</button>
-                <button class="filter-btn" data-filter="High">High Priority</button>
-                <button class="filter-btn" data-filter="Medium">Medium Priority</button>
-                <button class="filter-btn" data-filter="Low">Low Priority</button>
-                <button class="filter-btn" data-filter="In-Progress">In Progress</button>
-                <button class="filter-btn" data-filter="Completed">Completed</button>
-                <button class="filter-btn" data-filter="Archived">Archived</button>
-            </div>
-            <div class="action-group">
-                <button class="btn btn-primary btn-icon" onclick="openAddModal()">+ Add Task</button>
-                <button class="btn btn-secondary btn-icon" onclick="openExportModal()">Export</button>
-                <button class="btn btn-secondary btn-icon" onclick="printTasks()">Print</button>
-            </div>
+  <div class="dashboard">
+    <nav class="navbar">
+      <div class="navbar-content">
+        <div class="navbar-brand">TaskFlow</div>
+        <div class="navbar-user">
+          <span id="userEmail">Loading...</span>
+          <button class="btn-logout" onclick="signOut()">Sign Out</button>
         </div>
+      </div>
+    </nav>
 
-        <!-- Tasks Section -->
-        <section class="tasks-section">
-            <div class="tasks-container">
-                <div class="table-wrapper">
-                    <table id="tasksTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Task</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Frequency</th>
-                                <th>Notes</th>
-                                <th class="no-print">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tasksTableBody">
-                            <tr>
-                                <td colspan="9" style="text-align: center; padding: 40px;">
-                                    <div class="spinner" style="margin: 0 auto;"></div>
-                                    <p style="margin-top: 15px; color: var(--text-secondary);">Loading your tasks...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalTasks">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="activeTasks">0</div>
+          <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="highPriority">0</div>
+          <div class="stat-label">High Priority</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="inProgress">0</div>
+          <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="completed">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="archived">0</div>
+          <div class="stat-label">Archived</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls-bar container">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">All Tasks</button>
+        <button class="filter-btn" data-filter="High">High Priority</button>
+        <button class="filter-btn" data-filter="Medium">Medium Priority</button>
+        <button class="filter-btn" data-filter="Low">Low Priority</button>
+        <button class="filter-btn" data-filter="In-Progress">In Progress</button>
+        <button class="filter-btn" data-filter="Completed">Completed</button>
+        <button class="filter-btn" data-filter="Archived">Archived</button>
+      </div>
+      <div class="action-group">
+        <button class="btn btn-primary btn-icon" onclick="openAddModal()">+ Add Task</button>
+        <button class="btn btn-secondary btn-icon" onclick="openExportModal()">Export</button>
+        <button class="btn btn-secondary btn-icon" onclick="printTasks()">Print</button>
+      </div>
     </div>
 
-    <!-- Add/Edit Task Modal -->
+    <section class="tasks-section">
+      <div class="tasks-container">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Frequency</th>
+                <th>Notes</th>
+                <th class="no-print">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tasksTableBody">
+              <tr>
+                <td colspan="9" style="text-align:center;padding:40px;">
+                  <div class="spinner" style="margin:0 auto;"></div>
+                  <p style="margin-top:15px;color:#6c757d;">Loading your tasks...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task Modal -->
     <div id="taskModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add New Task</h2>
-                <button class="close" onclick="closeModal('taskModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="taskForm">
-                    <input type="hidden" id="taskId">
-
-                    <div class="form-group">
-                        <label class="form-label">Task Name *</label>
-                        <input type="text" id="taskName" class="form-input" required>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Priority *</label>
-                            <select id="taskPriority" class="form-input" required>
-                                <option value="High">High</option>
-                                <option value="High-Medium">High-Medium</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Medium-Low">Medium-Low</option>
-                                <option value="Low">Low</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Status *</label>
-                            <select id="taskStatus" class="form-input" required>
-                                <option value="Not Started">Not Started</option>
-                                <option value="In-Progress">In-Progress</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Start Date *</label>
-                            <input type="date" id="taskStartDate" class="form-input" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">End Date *</label>
-                            <input type="date" id="taskEndDate" class="form-input" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Frequency *</label>
-                        <select id="taskFrequency" class="form-input" required>
-                            <option value="One-time">One-time</option>
-                            <option value="Daily">Daily</option>
-                            <option value="Daily (Morning)">Daily (Morning)</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Regular">Regular</option>
-                            <option value="Ongoing">Ongoing</option>
-                            <option value="Project">Project</option>
-                            <option value="Collaboration">Collaboration</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea id="taskNotes" class="form-input" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Share With / Assign To</label>
-                        <input type="email" id="taskAssignee" class="form-input" 
-                               placeholder="Enter email address (optional)">
-                        <small style="color: var(--text-secondary); font-size: 0.85rem;">
-                            They will receive an email notification with task details
-                        </small>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modalTitle">Add New Task</h2>
+          <button class="close" onclick="closeModal('taskModal')">&times;</button>
         </div>
+        <div class="modal-body">
+          <form id="taskForm">
+            <input type="hidden" id="taskId" />
+            <div class="form-group">
+              <label class="form-label" for="taskName">Task Name *</label>
+              <input type="text" id="taskName" class="form-input" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="taskPriority">Priority *</label>
+                <select id="taskPriority" class="form-input" required>
+                  <option value="High">High</option>
+                  <option value="High-Medium">High-Medium</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Medium-Low">Medium-Low</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="taskStatus">Status *</label>
+                <select id="taskStatus" class="form-input" required>
+                  <option value="Not Started">Not Started</option>
+                  <option value="In-Progress">In-Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="taskStartDate">Start Date *</label>
+                <input type="date" id="taskStartDate" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="taskEndDate">End Date *</label>
+                <input type="date" id="taskEndDate" class="form-input" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="taskFrequency">Frequency *</label>
+              <select id="taskFrequency" class="form-input" required>
+                <option value="One-time">One-time</option>
+                <option value="Daily">Daily</option>
+                <option value="Daily (Morning)">Daily (Morning)</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Regular">Regular</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Project">Project</option>
+                <option value="Collaboration">Collaboration</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="taskNotes">Notes</label>
+              <textarea id="taskNotes" class="form-input" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="taskAssignee">Share With / Assign To</label>
+              <input type="email" id="taskAssignee" class="form-input" placeholder="Enter email address (optional)" />
+              <small style="color:#6c757d;font-size:0.85rem;">
+                They will receive an email notification with task details.
+              </small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Export Modal -->
-    <div id="exportModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Export Tasks</h2>
-                <button class="close" onclick="closeModal('exportModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                    Choose export format for your filtered tasks
-                </p>
-                <div class="export-options">
-                    <div class="export-card" onclick="exportTasks('csv')">
-                        <div style="font-size: 2rem; margin-bottom: 10px;">📊</div>
-                        <div style="font-weight: 600;">CSV</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Excel Compatible</div>
-                    </div>
-                    <div class="export-card" onclick="exportTasks('pdf')">
-                        <div style="font-size: 2rem; margin-bottom: 10px;">📄</div>
-                        <div style="font-weight: 600;">PDF</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Print Ready</div>
-                    </div>
-                    <div class="export-card" onclick="exportTasks('md')">
-                        <div style="font-size: 2rem; margin-bottom: 10px;">📝</div>
-                        <div style="font-weight: 600;">Markdown</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Text Format</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('exportModal')">Close</button>
-            </div>
-        </div>
-    </div>
+    <!-- (Keep your existing Export and Share modals here) -->
+  </div>
 
-    <!-- Share Task Modal -->
-    <div id="shareModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Share Task</h2>
-                <button class="close" onclick="closeModal('shareModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Share As</label>
-                    <div class="export-options">
-                        <div class="export-card" onclick="shareTask('calendar')">
-                            <div style="font-size: 2rem; margin-bottom: 10px;">📅</div>
-                            <div style="font-weight: 600;">Calendar Event</div>
-                        </div>
-                        <div class="export-card" onclick="shareTask('email')">
-                            <div style="font-size: 2rem; margin-bottom: 10px;">✉️</div>
-                            <div style="font-weight: 600;">Email Link</div>
-                        </div>
-                        <div class="export-card" onclick="shareTask('reminder')">
-                            <div style="font-size: 2rem; margin-bottom: 10px;">⏰</div>
-                            <div style="font-weight: 600;">Reminder</div>
-                        </div>
-                    </div>
-                </div>
-                <input type="hidden" id="shareTaskId">
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('shareModal')">Close</button>
-            </div>
-        </div>
-    </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="config.js"></script>
+  <script>
+    let currentUser = null;
+    let allTasks = [];
+    let currentFilter = 'all';
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="config.js"></script>
-    <script>
-        let currentUser = null;
-        let allTasks = [];
-        let currentFilter = 'all';
+    function getClient() {
+      if (window.taskflowSupabase) return window.taskflowSupabase;
+      if (window.supabaseClient) return window.supabaseClient;
+      if (typeof supabase !== 'undefined' && supabase) return supabase;
+      return null;
+    }
 
-        function getClient() {
-            if (window.taskflowSupabase) return window.taskflowSupabase;
-            if (window.supabaseClient) return window.supabaseClient;
-            if (typeof supabase !== 'undefined' && supabase) return supabase;
-            return null;
+    async function checkAuth() {
+      const client = getClient();
+      if (!client) {
+        console.error('Supabase client is not initialized on dashboard.');
+        window.location.href = 'signin.html';
+        return;
+      }
+
+      const { data: { session }, error } = await client.auth.getSession();
+
+      if (error) {
+        console.error('Error getting session:', error);
+        window.location.href = 'signin.html';
+        return;
+      }
+
+      if (!session) {
+        window.location.href = 'signin.html';
+        return;
+      }
+
+      currentUser = session.user;
+      document.getElementById('userEmail').textContent = currentUser.email || 'Signed in';
+
+      loadTasks();
+    }
+
+    async function loadTasks() {
+      const client = getClient();
+      if (!client || !currentUser) {
+        console.error('Cannot load tasks: client or currentUser is missing.');
+        return;
+      }
+      try {
+        const { data, error } = await client
+          .from('tasks')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allTasks = data || [];
+        renderTasks();
+        updateStats();
+
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        alert('Error loading tasks. Please refresh the page.');
+      }
+    }
+
+    function renderTasks() {
+      const tbody = document.getElementById('tasksTableBody');
+      let filteredTasks = allTasks;
+
+      if (currentFilter !== 'all') {
+        if (currentFilter === 'Archived') {
+          filteredTasks = allTasks.filter(t => t.archived);
+        } else {
+          filteredTasks = allTasks.filter(t => {
+            if (t.archived && currentFilter !== 'Archived') return false;
+            return t.priority.includes(currentFilter) || t.status === currentFilter;
+          });
+        }
+      } else {
+        filteredTasks = allTasks.filter(t => !t.archived);
+      }
+
+      if (filteredTasks.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 40px; color: #6c757d;">
+              No tasks found. Click "Add Task" to get started!
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredTasks.map(task => `
+        <tr class="${task.archived ? 'archived' : ''}" data-task-id="${task.id}">
+          <td>${task.id}</td>
+          <td>
+            ${task.task}
+            ${task.assigned_by ? `<br><small style="color:#6c757d;">Assigned by: ${task.assigned_by}</small>` : ''}
+            ${task.archived ? '<br><span class="priority-badge priority-low">Archived</span>' : ''}
+          </td>
+          <td><span class="priority-badge priority-${task.priority.toLowerCase().replace(' ', '-')}">${task.priority}</span></td>
+          <td><span class="status-badge status-${task.status.toLowerCase().replace(' ', '-')}">${task.status}</span></td>
+          <td>${formatDate(task.start_date)}</td>
+          <td>${formatDate(task.end_date)}</td>
+          <td>${task.frequency}</td>
+          <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;">${task.notes || '-'}</td>
+          <td class="actions-cell no-print">
+            ${!task.archived ? `
+              <button class="btn-table btn-edit" onclick="editTask(${task.id})">Edit</button>
+              ${task.status !== 'Completed' ? `
+                <button class="btn-table btn-complete" onclick="markComplete(${task.id})">Complete</button>
+              ` : ''}
+              <button class="btn-table btn-share" onclick="openShareModal(${task.id})">Share</button>
+              <button class="btn-table btn-archive" onclick="archiveTask(${task.id})">Archive</button>
+            ` : `
+              <button class="btn-table btn-archive" onclick="unarchiveTask(${task.id})">Unarchive</button>
+            `}
+            <button class="btn-table btn-delete" onclick="deleteTask(${task.id})">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateStats() {
+      const active = allTasks.filter(t => !t.archived);
+      document.getElementById('totalTasks').textContent = allTasks.length;
+      document.getElementById('activeTasks').textContent = active.length;
+      document.getElementById('highPriority').textContent = active.filter(t => t.priority.includes('High')).length;
+      document.getElementById('inProgress').textContent = active.filter(t => t.status === 'In-Progress').length;
+      document.getElementById('completed').textContent = active.filter(t => t.status === 'Completed').length;
+      document.getElementById('archived').textContent = allTasks.filter(t => t.archived).length;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        renderTasks();
+      });
+    });
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'Add New Task';
+      document.getElementById('taskForm').reset();
+      document.getElementById('taskId').value = '';
+      document.getElementById('taskModal').style.display = 'block';
+    }
+
+    function editTask(id) {
+      const task = allTasks.find(t => t.id === id);
+      if (!task) return;
+
+      document.getElementById('modalTitle').textContent = 'Edit Task';
+      document.getElementById('taskId').value = task.id;
+      document.getElementById('taskName').value = task.task;
+      document.getElementById('taskPriority').value = task.priority;
+      document.getElementById('taskStatus').value = task.status;
+      document.getElementById('taskStartDate').value = task.start_date;
+      document.getElementById('taskEndDate').value = task.end_date;
+      document.getElementById('taskFrequency').value = task.frequency;
+      document.getElementById('taskNotes').value = task.notes || '';
+      document.getElementById('taskAssignee').value = task.assignee || '';
+
+      document.getElementById('taskModal').style.display = 'block';
+    }
+
+    async function saveTask() {
+      const client = getClient();
+      if (!client || !currentUser) {
+        alert('Supabase client is not initialized. Please refresh and sign in again.');
+        return;
+      }
+
+      const taskId = document.getElementById('taskId').value;
+      const taskData = {
+        task: document.getElementById('taskName').value,
+        priority: document.getElementById('taskPriority').value,
+        status: document.getElementById('taskStatus').value,
+        start_date: document.getElementById('taskStartDate').value,
+        end_date: document.getElementById('taskEndDate').value,
+        frequency: document.getElementById('taskFrequency').value,
+        notes: document.getElementById('taskNotes').value,
+        assignee: document.getElementById('taskAssignee').value,
+        user_id: currentUser.id
+      };
+
+      try {
+        if (taskId) {
+          const { error } = await client
+            .from('tasks')
+            .update(taskData)
+            .eq('id', taskId);
+
+          if (error) throw error;
+        } else {
+          const { data, error } = await client
+            .from('tasks')
+            .insert([taskData])
+            .select();
+
+          if (error) throw error;
+
+          if (taskData.assignee && taskData.assignee.trim() !== '') {
+            await assignTask(data[0], taskData.assignee);
+          }
         }
 
+        closeModal('taskModal');
+        loadTasks();
 
-        // Check authentication on load
-        async function checkAuth() {
-            const client = getClient();
-            if (!client) {
-                console.error('Supabase client is not initialized on dashboard.');
-                window.location.href = 'signin.html';
-                return;
-            }
+      } catch (error) {
+        console.error('Error saving task:', error);
+        alert('Error saving task: ' + (error.message || 'Unknown error'));
+      }
+    }
 
-            const { data: { session }, error } = await client.auth.getSession();
+    async function assignTask(task, assigneeEmail) {
+      const client = getClient();
+      if (!client) {
+        console.error('Supabase client missing in assignTask');
+        return;
+      }
 
-            if (error) {
-                console.error('Error getting session:', error);
-                window.location.href = 'signin.html';
-                return;
-            }
+      try {
+        const { data: assigneeUser, error } = await client
+          .from('profiles')
+          .select('id, email')
+          .eq('email', assigneeEmail)
+          .single();
 
-            if (!session) {
-                window.location.href = 'signin.html';
-                return;
-            }
-
-            currentUser = session.user;
-            document.getElementById('userEmail').textContent = currentUser.email || 'Signed in';
-
-            // Load tasks
-            loadTasks();
+        if (error || !assigneeUser) {
+          alert(`${assigneeEmail} is not registered. They will receive an invitation to join TaskFlow.`);
+          return;
         }
 
-        // Load tasks from Supabase
-        async function loadTasks() {
-            const client = getClient();
-            if (!client || !currentUser) {
-                console.error('Cannot load tasks: client or currentUser is missing.');
-                return;
-            }
-            try {
-                const { data, error } = await client
-                    .from('tasks')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false });
+        const { error: assignError } = await client
+          .from('tasks')
+          .insert({
+            ...task,
+            id: undefined,
+            user_id: assigneeUser.id,
+            assigned_by: currentUser.email,
+            created_at: undefined,
+            updated_at: undefined
+          });
 
-                if (error) throw error;
+        if (assignError) throw assignError;
 
-                allTasks = data || [];
-                renderTasks();
-                updateStats();
+        alert(`Task assigned to ${assigneeEmail}. They will receive a notification.`);
+      } catch (error) {
+        console.error('Error assigning task:', error);
+      }
+    }
 
-            } catch (error) {
-                console.error('Error loading tasks:', error);
-                alert('Error loading tasks. Please refresh the page.');
-            }
+    async function markComplete(id) {
+      const client = getClient();
+      if (!client) return;
+      try {
+        const { error } = await client
+          .from('tasks')
+          .update({ status: 'Completed' })
+          .eq('id', id);
+        if (error) throw error;
+        loadTasks();
+      } catch (error) {
+        console.error('Error marking complete:', error);
+        alert('Error updating task.');
+      }
+    }
+
+    async function archiveTask(id) {
+      const client = getClient();
+      if (!client) return;
+      try {
+        const { error } = await client
+          .from('tasks')
+          .update({ archived: true })
+          .eq('id', id);
+        if (error) throw error;
+        loadTasks();
+      } catch (error) {
+        console.error('Error archiving task:', error);
+        alert('Error archiving task.');
+      }
+    }
+
+    async function unarchiveTask(id) {
+      const client = getClient();
+      if (!client) return;
+      try {
+        const { error } = await client
+          .from('tasks')
+          .update({ archived: false })
+          .eq('id', id);
+        if (error) throw error;
+        loadTasks();
+      } catch (error) {
+        console.error('Error unarchiving task:', error);
+        alert('Error unarchiving task.');
+      }
+    }
+
+    async function deleteTask(id) {
+      if (!confirm('Are you sure you want to permanently delete this task?')) return;
+      const client = getClient();
+      if (!client) return;
+      try {
+        const { error } = await client
+          .from('tasks')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        loadTasks();
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        alert('Error deleting task.');
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function printTasks() {
+      window.print();
+    }
+
+    async function signOut() {
+      const client = getClient();
+      if (client) {
+        try {
+          await client.auth.signOut();
+        } catch (error) {
+          console.error('Error signing out:', error);
         }
+      }
+      window.location.href = 'signin.html';
+    }
 
-        // Render tasks to table
-        function renderTasks() {
-            const tbody = document.getElementById('tasksTableBody');
-            let filteredTasks = allTasks;
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+      }
+    };
 
-            // Apply filter
-            if (currentFilter !== 'all') {
-                if (currentFilter === 'Archived') {
-                    filteredTasks = allTasks.filter(t => t.archived);
-                } else {
-                    filteredTasks = allTasks.filter(t => {
-                        if (t.archived && currentFilter !== 'Archived') return false;
-                        return t.priority.includes(currentFilter) || t.status === currentFilter;
-                    });
-                }
-            } else {
-                filteredTasks = allTasks.filter(t => !t.archived);
-            }
-
-            if (filteredTasks.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                            No tasks found. Click "Add Task" to get started!
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = filteredTasks.map(task => `
-                <tr class="${task.archived ? 'archived' : ''}" data-task-id="${task.id}">
-                    <td>${task.id}</td>
-                    <td>
-                        ${task.task}
-                        ${task.assigned_by ? `<br><small style="color: var(--text-secondary);">Assigned by: ${task.assigned_by}</small>` : ''}
-                        ${task.archived ? '<br><span class="priority-badge priority-low">Archived</span>' : ''}
-                    </td>
-                    <td><span class="priority-badge priority-${task.priority.toLowerCase().replace(' ', '-')}">${task.priority}</span></td>
-                    <td><span class="status-badge status-${task.status.toLowerCase().replace(' ', '-')}">${task.status}</span></td>
-                    <td>${formatDate(task.start_date)}</td>
-                    <td>${formatDate(task.end_date)}</td>
-                    <td>${task.frequency}</td>
-                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;">${task.notes || '-'}</td>
-                    <td class="actions-cell no-print">
-                        ${!task.archived ? `
-                            <button class="btn-table btn-edit" onclick="editTask(${task.id})">Edit</button>
-                            ${task.status !== 'Completed' ? `
-                                <button class="btn-table btn-complete" onclick="markComplete(${task.id})">Complete</button>
-                            ` : ''}
-                            <button class="btn-table btn-share" onclick="openShareModal(${task.id})">Share</button>
-                            <button class="btn-table btn-archive" onclick="archiveTask(${task.id})">Archive</button>
-                        ` : `
-                            <button class="btn-table btn-archive" onclick="unarchiveTask(${task.id})">Unarchive</button>
-                        `}
-                        <button class="btn-table btn-delete" onclick="deleteTask(${task.id})">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Update statistics
-        function updateStats() {
-            const active = allTasks.filter(t => !t.archived);
-            document.getElementById('totalTasks').textContent = allTasks.length;
-            document.getElementById('activeTasks').textContent = active.length;
-            document.getElementById('highPriority').textContent = active.filter(t => t.priority.includes('High')).length;
-            document.getElementById('inProgress').textContent = active.filter(t => t.status === 'In-Progress').length;
-            document.getElementById('completed').textContent = active.filter(t => t.status === 'Completed').length;
-            document.getElementById('archived').textContent = allTasks.filter(t => t.archived).length;
-        }
-
-        // Format date
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-
-        // Filter tasks
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.dataset.filter;
-                renderTasks();
-            });
-        });
-
-        // Open add modal
-        function openAddModal() {
-            document.getElementById('modalTitle').textContent = 'Add New Task';
-            document.getElementById('taskForm').reset();
-            document.getElementById('taskId').value = '';
-            document.getElementById('taskModal').style.display = 'block';
-        }
-
-        // Edit task
-        function editTask(id) {
-            const task = allTasks.find(t => t.id === id);
-            if (!task) return;
-
-            document.getElementById('modalTitle').textContent = 'Edit Task';
-            document.getElementById('taskId').value = task.id;
-            document.getElementById('taskName').value = task.task;
-            document.getElementById('taskPriority').value = task.priority;
-            document.getElementById('taskStatus').value = task.status;
-            document.getElementById('taskStartDate').value = task.start_date;
-            document.getElementById('taskEndDate').value = task.end_date;
-            document.getElementById('taskFrequency').value = task.frequency;
-            document.getElementById('taskNotes').value = task.notes || '';
-            document.getElementById('taskAssignee').value = task.assignee || '';
-
-            document.getElementById('taskModal').style.display = 'block';
-        }
-
-        // Save task
-        async function saveTask() {
-            const taskId = document.getElementById('taskId').value;
-            const taskData = {
-                task: document.getElementById('taskName').value,
-                priority: document.getElementById('taskPriority').value,
-                status: document.getElementById('taskStatus').value,
-                start_date: document.getElementById('taskStartDate').value,
-                end_date: document.getElementById('taskEndDate').value,
-                frequency: document.getElementById('taskFrequency').value,
-                notes: document.getElementById('taskNotes').value,
-                assignee: document.getElementById('taskAssignee').value,
-                user_id: currentUser.id
-            };
-
-            try {
-                if (taskId) {
-                    // Update existing task
-                    const { error } = await supabase
-                        .from('tasks')
-                        .update(taskData)
-                        .eq('id', taskId);
-
-                    if (error) throw error;
-                } else {
-                    // Create new task
-                    const { data, error } = await supabase
-                        .from('tasks')
-                        .insert([taskData])
-                        .select();
-
-                    if (error) throw error;
-
-                    // If task is assigned to someone, send notification
-                    if (taskData.assignee && taskData.assignee.trim() !== '') {
-                        await assignTask(data[0], taskData.assignee);
-                    }
-                }
-
-                closeModal('taskModal');
-                loadTasks();
-
-            } catch (error) {
-                console.error('Error saving task:', error);
-                alert('Error saving task: ' + error.message);
-            }
-        }
-
-        // Assign task to another user
-        async function assignTask(task, assigneeEmail) {
-            try {
-                // Check if assignee is a registered user
-                const { data: assigneeUser, error } = await supabase
-                    .from('profiles')
-                    .select('id, email')
-                    .eq('email', assigneeEmail)
-                    .single();
-
-                if (error || !assigneeUser) {
-                    // User not registered - send invitation email
-                    alert(`User ${assigneeEmail} is not registered. They will receive an invitation to join TaskFlow.`);
-                    // In production, trigger email via Supabase Edge Function
-                    return;
-                }
-
-                // Create task for assignee
-                const { error: assignError } = await supabase
-                    .from('tasks')
-                    .insert([{
-                        ...task,
-                        id: undefined, // New record
-                        user_id: assigneeUser.id,
-                        assigned_by: currentUser.email,
-                        created_at: undefined,
-                        updated_at: undefined
-                    }]);
-
-                if (assignError) throw assignError;
-
-                // Send notification email (via Edge Function in production)
-                alert(`Task assigned to ${assigneeEmail}. They will receive a notification.`);
-
-            } catch (error) {
-                console.error('Error assigning task:', error);
-            }
-        }
-
-        // Mark task complete
-        async function markComplete(id) {
-            try {
-                const { error } = await supabase
-                    .from('tasks')
-                    .update({ status: 'Completed' })
-                    .eq('id', id);
-
-                if (error) throw error;
-                loadTasks();
-            } catch (error) {
-                console.error('Error marking complete:', error);
-                alert('Error updating task');
-            }
-        }
-
-        // Archive task
-        async function archiveTask(id) {
-            try {
-                const { error } = await supabase
-                    .from('tasks')
-                    .update({ archived: true })
-                    .eq('id', id);
-
-                if (error) throw error;
-                loadTasks();
-            } catch (error) {
-                console.error('Error archiving task:', error);
-                alert('Error archiving task');
-            }
-        }
-
-        // Unarchive task
-        async function unarchiveTask(id) {
-            try {
-                const { error } = await supabase
-                    .from('tasks')
-                    .update({ archived: false })
-                    .eq('id', id);
-
-                if (error) throw error;
-                loadTasks();
-            } catch (error) {
-                console.error('Error unarchiving task:', error);
-                alert('Error unarchiving task');
-            }
-        }
-
-        // Delete task
-        async function deleteTask(id) {
-            if (!confirm('Are you sure you want to permanently delete this task?')) return;
-
-            try {
-                const { error } = await supabase
-                    .from('tasks')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) throw error;
-                loadTasks();
-            } catch (error) {
-                console.error('Error deleting task:', error);
-                alert('Error deleting task');
-            }
-        }
-
-        // Close modal
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // Print tasks
-        function printTasks() {
-            window.print();
-        }
-
-        // Open export modal
-        function openExportModal() {
-            document.getElementById('exportModal').style.display = 'block';
-        }
-
-        // Export tasks
-        function exportTasks(format) {
-            const filteredTasks = getFilteredTasks();
-            const exportFields = ['id', 'task', 'priority', 'status', 'start_date', 'end_date', 'frequency', 'notes'];
-
-            if (format === 'csv') {
-                exportToCSV(filteredTasks, exportFields);
-            } else if (format === 'pdf') {
-                exportToPDF(filteredTasks, exportFields);
-            } else if (format === 'md') {
-                exportToMarkdown(filteredTasks, exportFields);
-            }
-
-            closeModal('exportModal');
-        }
-
-        // Get filtered tasks for export/print
-        function getFilteredTasks() {
-            if (currentFilter === 'all') {
-                return allTasks.filter(t => !t.archived);
-            } else if (currentFilter === 'Archived') {
-                return allTasks.filter(t => t.archived);
-            } else {
-                return allTasks.filter(t => {
-                    if (t.archived) return false;
-                    return t.priority.includes(currentFilter) || t.status === currentFilter;
-                });
-            }
-        }
-
-        // Export to CSV
-        function exportToCSV(tasks, fields) {
-            const headers = ['ID', 'Task', 'Priority', 'Status', 'Start Date', 'End Date', 'Frequency', 'Notes'];
-            const rows = tasks.map(t => [
-                t.id,
-                `"${(t.task || '').replace(/"/g, '""')}"`,
-                t.priority,
-                t.status,
-                formatDate(t.start_date),
-                formatDate(t.end_date),
-                t.frequency,
-                `"${(t.notes || '').replace(/"/g, '""')}"`
-            ]);
-
-            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            downloadFile(csv, 'tasks.csv', 'text/csv');
-        }
-
-        // Export to PDF
-        function exportToPDF(tasks, fields) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFontSize(18);
-            doc.text('TaskFlow - Tasks Export', 14, 22);
-            doc.setFontSize(11);
-            doc.text(`Filter: ${currentFilter}`, 14, 30);
-            doc.text(`Exported: ${new Date().toLocaleDateString()}`, 14, 36);
-
-            const tableData = tasks.map(t => [
-                t.id,
-                t.task,
-                t.priority,
-                t.status,
-                formatDate(t.start_date),
-                formatDate(t.end_date),
-                t.frequency,
-                t.notes || '-'
-            ]);
-
-            doc.autoTable({
-                head: [['ID', 'Task', 'Priority', 'Status', 'Start', 'End', 'Frequency', 'Notes']],
-                body: tableData,
-                startY: 45,
-                styles: { fontSize: 8 },
-                columnStyles: {
-                    0: { cellWidth: 10 },
-                    1: { cellWidth: 40 },
-                    7: { cellWidth: 30 }
-                }
-            });
-
-            doc.save('tasks.pdf');
-        }
-
-        // Export to Markdown
-        function exportToMarkdown(tasks, fields) {
-            let md = `# TaskFlow Tasks\n\n`;
-            md += `**Filter:** ${currentFilter}\n`;
-            md += `**Exported:** ${new Date().toLocaleDateString()}\n\n`;
-            md += `| ID | Task | Priority | Status | Start Date | End Date | Frequency | Notes |\n`;
-            md += `|----|------|----------|--------|------------|----------|-----------|-------|\n`;
-
-            tasks.forEach(t => {
-                md += `| ${t.id} | ${t.task} | ${t.priority} | ${t.status} | ${formatDate(t.start_date)} | ${formatDate(t.end_date)} | ${t.frequency} | ${t.notes || '-'} |\n`;
-            });
-
-            downloadFile(md, 'tasks.md', 'text/markdown');
-        }
-
-        // Download file helper
-        function downloadFile(content, filename, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-
-        // Share task
-        function openShareModal(id) {
-            document.getElementById('shareTaskId').value = id;
-            document.getElementById('shareModal').style.display = 'block';
-        }
-
-        // Share task implementation
-        function shareTask(method) {
-            const id = document.getElementById('shareTaskId').value;
-            const task = allTasks.find(t => t.id == id);
-            if (!task) return;
-
-            if (method === 'calendar') {
-                // Generate ICS file
-                const ics = generateICS(task);
-                downloadFile(ics, `task-${task.id}.ics`, 'text/calendar');
-            } else if (method === 'email') {
-                // Generate mailto link
-                const subject = encodeURIComponent(`Task: ${task.task}`);
-                const body = encodeURIComponent(`
-Task: ${task.task}
-Priority: ${task.priority}
-Status: ${task.status}
-Start: ${formatDate(task.start_date)}
-End: ${formatDate(task.end_date)}
-Notes: ${task.notes || 'None'}
-
-View in TaskFlow: ${window.location.origin}/dashboard.html
-                `);
-                window.location.href = `mailto:?subject=${subject}&body=${body}`;
-            } else if (method === 'reminder') {
-                // Generate ICS reminder
-                const ics = generateICS(task, true);
-                downloadFile(ics, `reminder-${task.id}.ics`, 'text/calendar');
-            }
-
-            closeModal('shareModal');
-        }
-
-        // Generate ICS file
-        function generateICS(task, isReminder = false) {
-            const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-            const start = new Date(task.start_date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-            const end = new Date(task.end_date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-
-            return `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//TaskFlow//EN
-BEGIN:VEVENT
-UID:task-${task.id}@taskflow.app
-DTSTAMP:${now}
-DTSTART:${start}
-DTEND:${end}
-SUMMARY:${task.task}
-DESCRIPTION:Priority: ${task.priority}\nStatus: ${task.status}\nNotes: ${task.notes || 'None'}
-LOCATION:TaskFlow
-STATUS:CONFIRMED
-BEGIN:VALARM
-TRIGGER:-PT24H
-ACTION:DISPLAY
-DESCRIPTION:Reminder: ${task.task}
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-        }
-
-        // Sign out
-        async function signOut() {
-            const client = getClient();
-            if (client) {
-                try {
-                    await client.auth.signOut();
-                } catch (error) {
-                    console.error('Error signing out:', error);
-                }
-            }
-            window.location.href = 'signin.html';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-
-        // Initialize
-        checkAuth();
-    </script>
+    document.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
 </body>
 </html>
