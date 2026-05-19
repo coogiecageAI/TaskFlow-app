@@ -948,8 +948,8 @@
                         .eq('id', taskId);
 
                     if (error) throw error;
-                } else {
-                    if (!taskId) {
+                } //else {
+                if (!taskId) {
                         const { data, error } = await client
                             .from('tasks')
                             .insert([taskData])
@@ -961,9 +961,9 @@
                                 await assignTask(data[0], taskData.assignee);
                                 await archiveTask(data[0].id);
                         }
-                    }
-                    // Optional: handle assign/archiving here later
                 }
+                    // Optional: handle assign/archiving here later
+                //}
 
                 closeModal('taskModal');
                 loadTasks();
