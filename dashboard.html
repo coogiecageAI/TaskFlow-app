@@ -573,7 +573,9 @@
                         <input type="email" id="taskAssignee" class="form-input" 
                                placeholder="Enter email address (optional)">
                         <small style="color: var(--text-secondary); font-size: 0.85rem;">
-                            They will receive an email notification with task details
+                            They will receive an email notification with task details. 
+                            This task will be archived immediately once assigned to another person. 
+                            You will be able to find this task in your archived list.
                         </small>
                     </div>
                 </form>
@@ -1066,7 +1068,7 @@
             }
             
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('tasks')
                     .update({ archived: false })
                     .eq('id', id);
@@ -1083,8 +1085,15 @@
         async function deleteTask(id) {
             if (!confirm('Are you sure you want to permanently delete this task?')) return;
 
+            const client = getClient();
+            if (!client) {
+                console.error('Supabase client is not initialized in deleteTask.');
+                alert('Error deleting task.');
+                return;
+            }
+
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('tasks')
                     .delete()
                     .eq('id', id);
@@ -1093,7 +1102,7 @@
                 loadTasks();
             } catch (error) {
                 console.error('Error deleting task:', error);
-                alert('Error deleting task');
+                alert('Error deleting task.');
             }
         }
 
