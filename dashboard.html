@@ -1031,8 +1031,15 @@
 
         // Archive task
         async function archiveTask(id) {
+            const client = getClient();
+            if (!client) {
+                console.error('Supabase client is not initialized in archiveTask.');
+                alert('Error archiving task.');
+                return;
+            }
+
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('tasks')
                     .update({ archived: true })
                     .eq('id', id);
@@ -1041,7 +1048,7 @@
                 loadTasks();
             } catch (error) {
                 console.error('Error archiving task:', error);
-                alert('Error archiving task');
+                alert('Error archiving task.');
             }
         }
 
