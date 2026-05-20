@@ -957,9 +957,13 @@
 
                         if (error) throw error;
 
-                        if (taskData.assignee && taskData.assignee.trim() !== '') {
-                                await assignTask(data[0], taskData.assignee);
-                                await archiveTask(data[0].id);
+                        // Ensure we actually got a row back
+                        const newTask = data && data.length > 0 ? data[0] : null;
+                        if (!newTask) {
+                            console.error('Insert returned no rows; cannot archive new task.');
+                        } else if (taskData.assignee && taskData.assignee.trim() !== '') {
+                            await assignTask(newTask, taskData.assignee);
+                            await archiveTask(newTask.id);
                         }
                 }
                     // Optional: handle assign/archiving here later
@@ -1054,6 +1058,13 @@
 
         // Unarchive task
         async function unarchiveTask(id) {
+            const client = getClient();
+            if (!client) {
+                console.error('Supabase client is not initialized in archiveTask.');
+                alert('Error unarchiving task.');
+                return;
+            }
+            
             try {
                 const { error } = await supabase
                     .from('tasks')
