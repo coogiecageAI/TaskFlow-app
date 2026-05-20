@@ -1021,8 +1021,16 @@
 
         // Mark task complete
         async function markComplete(id) {
+            
+            const client = getClient();
+            if (!client) {
+                console.error('Supabase client is not initialized in completeTask.');
+                alert('Error deleting task.');
+                return;
+            }
+
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('tasks')
                     .update({ status: 'Completed' })
                     .eq('id', id);
